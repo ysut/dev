@@ -168,3 +168,5 @@ ccrs*.bed.gz.tbi
 gencode*.gz
 gencode*.gz.tbi
 
+# private db
+ycudb*.db
