@@ -1,0 +1,4 @@
+*.db
+*.gff3.gz
+*.tbi
+*.bed.gz

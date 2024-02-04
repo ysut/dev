@@ -103,7 +103,6 @@ def frame_check(x):
 autoccr = '../../Resources/04_CCRs/ccrs.autosomes.v2.20180420.sort.bed.gz'
 xccr = '../../Resources/04_CCRs/ccrs.xchrom.v2.20180420.sort.bed.gz'
 
-
 def anno_ccr_score(df: pd.DataFrame) -> pd.DataFrame:
     def fetch_ccr_score(row, col):
         region = row[col]
