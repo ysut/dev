@@ -62,7 +62,7 @@ def insilico_screening(row) -> int:
 def clinvar_screening(row):
     if row['insilico_screening'] >= 0:
         if row['clinvar_same_pos']:
-            return 3
+            return 2
         else:
             if row['clinvar_same_motif']:
                 return 1
