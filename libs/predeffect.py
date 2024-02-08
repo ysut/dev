@@ -1,8 +1,22 @@
+import os
+import subprocess
 import numpy as np
 import pandas as pd
 from pybedtools import BedTool
 from pandarallel import pandarallel
-pandarallel.initialize(nb_workers=36, progress_bar=False, verbose=0, use_memory_fs=False)
+
+########   Initialize and setup pandas methods   ########
+pandarallel.initialize(nb_workers=os.cpu_count()-1, progress_bar=False, 
+                       verbose=0, use_memory_fs=False) 
+os.environ['JOBLIB_TEMP_FOLDER'] = '/tmp' 
+
+
+# Set the path of CCRs
+autoccr = '../../Resources/04_CCRs/ccrs.autosomes.v2.20180420.bed.gz'
+xccr = '../../Resources/04_CCRs/ccrs.xchrom.v2.20180420.bed.gz'
+
+canonlist = '../../Resources/01_CanonicalTranscripts/CanonicalTranscripts.exoncount.tsv'
+canon = pd.read_table(canonlist, sep='\t', header=0)
 
 
 # Calculate the length of CDS
@@ -62,8 +76,6 @@ def elofs_judge(row):
 
 
 # Determine causing NMD or escape NMD
-canonlist = '../../Resources/01_CanonicalTranscripts/CanonicalTranscripts.exoncount.tsv'
-canon = pd.read_table(canonlist, sep='\t', header=0)
 
 def nmd_judge(row):
     try:
@@ -100,8 +112,6 @@ def frame_check(x):
             print('Error: frame_check()')
             return False
 
-autoccr = '../../Resources/04_CCRs/ccrs.autosomes.v2.20180420.sort.bed.gz'
-xccr = '../../Resources/04_CCRs/ccrs.xchrom.v2.20180420.sort.bed.gz'
 
 def anno_ccr_score(df: pd.DataFrame) -> pd.DataFrame:
     def fetch_ccr_score(row, col):
@@ -123,8 +133,13 @@ def anno_ccr_score(df: pd.DataFrame) -> pd.DataFrame:
     sr = pd.concat([sr_skip, sr_del], axis=0)
     bedstr = '\n'.join(sr)
     all_regions = BedTool(bedstr, from_string=True)
-    ccr_auto = BedTool(autoccr)
-    ccr_x  = BedTool(xccr)
+    try:
+        ccr_auto = BedTool(autoccr)
+        ccr_x  = BedTool(xccr)
+    except FileNotFoundError:
+        subprocess.run(['bash', '../../Resources/04_CCRs/dlccrs.sh'])
+        ccr_auto = BedTool(autoccr)
+        ccr_x  = BedTool(xccr)
 
     intersected_auto = all_regions.intersect(ccr_auto, wa=True, wb=True)
     intersected_x = all_regions.intersect(ccr_x, wa=True, wb=True)

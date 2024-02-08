@@ -2,10 +2,7 @@ import re
 import numpy as np
 import pandas as pd
 import gffutils
-# import gffutils.pybedtools_integration
 import pysam
-# import pybedtools 
-# import swifter
 from Bio.Seq import Seq
 from liftover import get_lifter
 

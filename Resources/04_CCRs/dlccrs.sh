@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd $(dirname "$0")
+
 readonly BASE_URI="https://s3.us-east-2.amazonaws.com/ccrs/ccrs"
 readonly autosomes="ccrs.autosomes.v2.20180420.bed.gz"
 readonly xchrom="ccrs.xchrom.v2.20180420.bed.gz"
