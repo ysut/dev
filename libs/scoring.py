@@ -39,7 +39,7 @@ def insilico_screening(row) -> int:
                 if row['is_eLoF']:
                     return 7
                 else:
-                    return 4
+                    return 3
             else:
                 if ((float(row['skipped_ccrs']) >= 0.95) | (float(row['deleted_ccrs']) >= 0.95)):
                     return 6
@@ -60,13 +60,17 @@ def insilico_screening(row) -> int:
 
 
 def clinvar_screening(row):
-    if row['clinvar_same_pos']:
-        return 3
-    else:
-        if row['clinvar_same_motif']:
-            return 2
+    if row['insilico_screening'] >= 2:
+        if row['clinvar_same_pos']:
+            return 3
         else:
-            return 0
+            if row['clinvar_same_motif']:
+                return 1
+            else:
+                return 0
+    else:
+        return 0
+    
 
 def calc_final_score(df: pd.DataFrame) -> pd.DataFrame:
     df['FinalScore'] = df['insilico_screening'] + df['clinvar_screening']
