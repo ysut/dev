@@ -1,4 +1,4 @@
-*.journal
+*journal
 *.db
 *.gff3.gz
 *.tbi
