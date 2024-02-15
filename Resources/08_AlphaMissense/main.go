@@ -5,7 +5,9 @@ import (
 	"compress/gzip"
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
@@ -15,16 +17,68 @@ import (
 // Mapping of table names to column names
 // The key is the file name and the value is a list of table name and column names
 var tableColumns = map[string][]string{
-	"AlphaMissense_gene_hg19.tsv.gz":                 {"gene_hg19", "transcript_id, mean_am_pathogenicity"},
 	"AlphaMissense_hg19.tsv.gz":                      {"hg19", "CHROM, POS, REF, ALT, genome, uniprot_id, transcript_id, protein_variant, am_pathogenicity, am_class"},
 	"AlphaMissense_hg38.tsv.gz":                      {"hg38", "CHROM, POS, REF, ALT, genome, uniprot_id, transcript_id, protein_variant, am_pathogenicity, am_class"},
+	"AlphaMissense_gene_hg19.tsv.gz":                 {"gene_hg19", "transcript_id, mean_am_pathogenicity"},
 	"AlphaMissense_gene_hg38.tsv.gz":                 {"gene_hg38", "transcript_id, mean_am_pathogenicity"},
 	"AlphaMissense_isoforms_hg38.tsv.gz":             {"isf_hg38", "CHROM, POS, REF, ALT, genome, transcript_id, protein_variant, am_pathogenicity, am_class"},
 	"AlphaMissense_isoforms_aa_substitutions.tsv.gz": {"isf_aasub", "transcript_id, protein_variant, am_pathogenicity, am_class"},
 	"AlphaMissense_aa_substitutions.tsv.gz":          {"aasub", "uniprot_id, protein_variant, am_pathogenicity, am_class"},
 }
 
+// Mapping of file names to URLs
+var urls = map[string]string{
+	"AlphaMissense_hg19.tsv.gz":                      "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg19.tsv.gz",
+	"AlphaMissense_hg38.tsv.gz":                      "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz",
+	"AlphaMissense_gene_hg19.tsv.gz":                 "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_gene_hg19.tsv.gz",
+	"AlphaMissense_gene_hg38.tsv.gz":                 "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_gene_hg38.tsv.gz",
+	"AlphaMissense_isoforms_hg38.tsv.gz":             "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_isoforms_hg38.tsv.gz",
+	"AlphaMissense_isoforms_aa_substitutions.tsv.gz": "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_isoforms_aa_substitutions.tsv.gz",
+	"AlphaMissense_aa_substitutions.tsv.gz":          "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_aa_substitutions.tsv.gz",
+}
+
+// Check existence of a file
+func Exists(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil
+}
+
+// Download AlphaMissense bulk data
+func DownloadFile(filepath string, url string) error {
+	if Exists(filepath) {
+		log.Println("File already exists: ", filepath)
+		return nil
+	} else {
+		log.Println("Downloading file: ", filepath)
+		// Get the data
+		resp, err := http.Get(url)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		// Create the file
+		out, err := os.Create(filepath)
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+
+		// Write the body to file
+		_, err = io.Copy(out, resp.Body)
+		return err
+	}
+}
+
 func main() {
+	// #0. Download the files
+	for filePath, url := range urls {
+		err := DownloadFile(filePath, url)
+		if err != nil {
+			log.Fatalf("Error downloading file: ", err)
+		}
+	}
+
 	// #1. Open the database
 	dbPath := "am_database.db" // ToDo: make it configurable using arguments
 	db, err := sql.Open("sqlite3", dbPath)
@@ -69,10 +123,14 @@ func importData(db *sql.DB, filePath, tableName, columns string) {
 	// #3. Read the file line by line and insert into the database
 	scanner := bufio.NewScanner(gz)
 
-	if scanner.Scan() {
-		// pass the header
+	// Skip first 4 lines
+	for i := 0; i < 4; i++ {
+		if scanner.Scan() {
+			// pass the header
+		}
 	}
 
+	log.Println("Inserting data into ", tableName)
 	for scanner.Scan() {
 		line := scanner.Text()
 		values := strings.Split(line, "\t") // Split the line by tab
@@ -100,7 +158,7 @@ func importData(db *sql.DB, filePath, tableName, columns string) {
 		log.Fatalf("Error reading from file %s: %v", filePath, err)
 	}
 
-	fmt.Printf("Data from %s imported into %s successfully.\n", filePath, tableName)
+	log.Printf("Data from %s imported into %s successfully.\n", filePath, tableName)
 }
 
 func convertToInterfaceSlice(slice []string) []interface{} {
