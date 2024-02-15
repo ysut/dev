@@ -115,7 +115,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error committing transaction: %v", err)
 	}
-
 }
 
 // Function to import data from a gzip file into a table
@@ -134,34 +133,35 @@ func importData(db *sql.DB, filePath, tableName, columns string) {
 	}
 	defer gz.Close()
 
-	// #3. Read the file line by line and insert into the database
+	// Prepare the SQL statement for inserting data
+	placeholders := strings.Repeat("?, ", len(strings.Split(columns, ", "))-1) + "?"
+	insertSQL := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", tableName, columns, placeholders)
+	stmt, err := db.Prepare(insertSQL)
+	if err != nil {
+		log.Fatalf("Error preparing statement: %v", err)
+	}
+	defer stmt.Close()
+
+	// #3. Read the file line by line and insert into the database using prepared statement
 	scanner := bufio.NewScanner(gz)
 
-	// Skip first 4 lines
+	// Skip first 4 lines (headers)
 	for i := 0; i < 4; i++ {
-		if scanner.Scan() {
-			// pass the header
+		if !scanner.Scan() {
+			log.Fatal("Failed to skip header lines")
 		}
 	}
 
-	log.Println("Inserting data into ", tableName)
+	log.Println("Inserting data into", tableName)
 	for scanner.Scan() {
 		line := scanner.Text()
 		values := strings.Split(line, "\t") // Split the line by tab
 
-		// Generate the placeholders for the SQL query
-		// If final "?" is not added,
-		//     placeholder will be "?, ?, ... ?, " instead of "?, ?, ... ?"
-		placeholders := strings.Repeat("?, ", len(values)-1) + "?"
+		// Convert slice of string to slice of interface{} for Exec
+		interfaces := convertToInterfaceSlice(values)
 
-		// Generate the SQL query
-		insertSQL := fmt.Sprintf(
-			"INSERT INTO %s (%s) VALUES (%s)", tableName, columns, placeholders)
-
-		// Execute the SQL query
-		// If there is an error,
-		//     Fatalf will print the error and exit the program
-		_, err := db.Exec(insertSQL, convertToInterfaceSlice(values)...)
+		// Execute the prepared SQL statement
+		_, err := stmt.Exec(interfaces...)
 		if err != nil {
 			log.Fatalf("Error inserting data into %s: %v", tableName, err)
 		}
