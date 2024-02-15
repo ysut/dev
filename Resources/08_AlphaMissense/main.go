@@ -98,10 +98,24 @@ func main() {
 		}
 	}
 
-	// #3. Import data into the database defined in the dbPath
+	// #3. Start a transaction
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	// #4. Import data into the database defined in the dbPath
 	for filePath, tableInfo := range tableColumns {
 		importData(db, filePath, tableInfo[0], tableInfo[1])
 	}
+
+	// #5. Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalf("Error committing transaction: %v", err)
+	}
+
 }
 
 // Function to import data from a gzip file into a table
