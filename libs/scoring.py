@@ -59,7 +59,7 @@ def insilico_screening(row) -> int:
                     return 5
 
 
-def clinvar_screening(row):
+def clinvar_screening(row) -> int:
     if row['insilico_screening'] >= 0:
         if row['clinvar_same_pos']:
             return 2
@@ -72,6 +72,15 @@ def clinvar_screening(row):
         return 0
     
 
-def calc_final_score(df: pd.DataFrame) -> pd.DataFrame:
-    df['FinalScore'] = df['insilico_screening'] + df['clinvar_screening']
+def recalibrate_score(row) -> int:
+    if row['maxsplai'] < 0.1:
+        return -2
+    elif row['maxsplai'] < 0.2:
+        return -1
+    else:
+        return 0
+    
+
+def calc_priority_score(df: pd.DataFrame) -> pd.DataFrame:
+    df['PrioritySscore'] = df['insilico_screening'] + df['clinvar_screening']
     return df
