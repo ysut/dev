@@ -33,10 +33,13 @@ def insilico_screening(row) -> int:
   
     #2. Canonical
     else:
+        # Initialising the calibrated_score
+        calibrated_score = 0
         # Frameshift variants
         if row['is_Frameshift']:
             if row['is_NMD_at_Canon'] == 'Possibly_NMD':
                 if row['is_eLoF']:
+                    
                     return 7
                 else:
                     return 4
@@ -58,6 +61,13 @@ def insilico_screening(row) -> int:
                 else:
                     return 5
 
+def calibrate_score(row) -> int:
+    if row['maxsplai'] < 0.1:
+        return -2
+    elif row['maxsplai'] < 0.2:
+        return -1
+    else:
+        return 0
 
 def clinvar_screening(row) -> int:
     if row['insilico_screening'] >= 0:
@@ -72,13 +82,6 @@ def clinvar_screening(row) -> int:
         return 0
     
 
-def recalibrate_score(row) -> int:
-    if row['maxsplai'] < 0.1:
-        return -2
-    elif row['maxsplai'] < 0.2:
-        return -1
-    else:
-        return 0
     
 
 def calc_priority_score(df: pd.DataFrame) -> pd.DataFrame:
