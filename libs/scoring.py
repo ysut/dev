@@ -7,6 +7,14 @@ bp7_csq: set = {
     'splice_region_variant&synonymous_variant'
     }
 
+def _calibrate_by_spliceai(row) -> int:
+    if row['maxsplai'] < 0.1:
+        return -2
+    elif row['maxsplai'] < 0.2:
+        return -1
+    else:
+        return 0
+
 def insilico_screening(row) -> int:
     #1. Non-canonical
     if row['is_Canonical'] == 'False':
@@ -61,13 +69,6 @@ def insilico_screening(row) -> int:
                 else:
                     return 5
 
-def calibrate_score(row) -> int:
-    if row['maxsplai'] < 0.1:
-        return -2
-    elif row['maxsplai'] < 0.2:
-        return -1
-    else:
-        return 0
 
 def clinvar_screening(row) -> int:
     if row['insilico_screening'] >= 0:
@@ -85,5 +86,5 @@ def clinvar_screening(row) -> int:
     
 
 def calc_priority_score(df: pd.DataFrame) -> pd.DataFrame:
-    df['PrioritySscore'] = df['insilico_screening'] + df['clinvar_screening']
+    df['PriorityScore'] = df['insilico_screening'] + df['clinvar_screening']
     return df
