@@ -7,7 +7,7 @@ bp7_csq: set = {
     'splice_region_variant&synonymous_variant'
     }
 
-def _calibrate_by_spliceai(row) -> int:
+def _calc_canon_prescore(row) -> int:
     if row['maxsplai'] < 0.1:
         return -2
     elif row['maxsplai'] < 0.2:
@@ -41,33 +41,31 @@ def insilico_screening(row) -> int:
   
     #2. Canonical
     else:
-        # Initialising the calibrated_score
-        calibrated_score = 0
+        pre_score = _calc_canon_prescore(row)
         # Frameshift variants
         if row['is_Frameshift']:
             if row['is_NMD_at_Canon'] == 'Possibly_NMD':
                 if row['is_eLoF']:
-                    
-                    return 7
+                    return pre_score + 7
                 else:
-                    return 4
+                    return pre_score + 4
             else:
                 if ((float(row['skipped_ccrs']) >= 0.95) | (float(row['deleted_ccrs']) >= 0.95)):
-                    return 6
+                    return pre_score + 6
                 else:
                     if row['is_10%_truncation']:
-                        return 6
+                        return pre_score + 6
                     else:
-                        return 5
+                        return pre_score + 5
         # In-frame
         else:
             if ((float(row['skipped_ccrs']) >= 0.95) | (float(row['deleted_ccrs']) >= 0.95)):
-                return 6
+                return pre_score + 6
             else:
                 if row['is_10%_truncation']:
-                    return 6
+                    return pre_score + 6
                 else:
-                    return 5
+                    return pre_score + 5
 
 
 def clinvar_screening(row) -> int:
@@ -81,9 +79,7 @@ def clinvar_screening(row) -> int:
                 return 0
     else:
         return 0
-    
 
-    
 
 def calc_priority_score(df: pd.DataFrame) -> pd.DataFrame:
     df['PriorityScore'] = df['insilico_screening'] + df['clinvar_screening']
