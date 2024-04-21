@@ -65,7 +65,7 @@ def calc_cds_len_shorten(row):
 
 # Determine if the gene is included in eLoFs genes
 elofs = pd.read_table('../../Resources/02_EstimatedLoFGenes/lof_genes.txt', 
-                      header=None, names=['DuplicatedNum', 'gene'], sep='\t')
+                      header=None, names=['gene'], sep='\t')
 elofs_genes = elofs['gene'].unique().tolist()
 
 def elofs_judge(row):
