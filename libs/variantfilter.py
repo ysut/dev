@@ -25,11 +25,11 @@ def extract_snv(df: pd.DataFrame, key: str) -> pd.DataFrame:
 def extract_denovo(df: pd.DataFrame) -> pd.DataFrame:
     df = df.astype({'vqslod': float, 'denovogear': float,
                     'triodenovo': float, 'dnmfilter': float})
-    df = df[(df['vqslod'] > -8.22)
-            | (df['denovogear'] > 0.002614)
-            | (df['triodenovo'] > 5.21)
-            | (df['dnmfilter'] > 0.1994)
-            | (df['denovofilter'] == 'TRUE')]
+    df = df[(df['vqslod'] > -7.18)
+            & ((df['denovogear'] > 0.02)
+            | (df['triodenovo'] > 5.72)
+            | (df['dnmfilter'] > 0.196)
+            | (df['denovofilter'] == 'TRUE'))]
 
     return df
 
