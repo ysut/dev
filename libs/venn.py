@@ -270,7 +270,7 @@ def venn4(labels, names=['A', 'B', 'C', 'D'], leg_names=['A2', 'B2', 'C2', 'D2']
     draw_text(fig, ax, 0.50, 0.38, labels.get('1111', ''), fontsize=fontsize)
 
     # legend
-    draw_text(fig, ax, 0.13, 0.18, names[0], colors[0], fontsize=fontsize, ha="right")
+    draw_text(fig, ax, 0.20, 0.18, names[0], colors[0], fontsize=fontsize, ha="right")
     draw_text(fig, ax, 0.18, 0.83, names[1], colors[1], fontsize=fontsize, ha="right", va="bottom")
     draw_text(fig, ax, 0.82, 0.83, names[2], colors[2], fontsize=fontsize, ha="left", va="bottom")
     draw_text(fig, ax, 0.87, 0.18, names[3], colors[3], fontsize=fontsize, ha="left", va="top")
