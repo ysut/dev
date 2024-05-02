@@ -42,6 +42,14 @@ def anno_same_motif_vars(row, tabixfile: pysam.pysam.libctabix.TabixFile):
     samemotifs = []
     query_chr: str = f'{row["CHROM"]}'
     query_pos: int = int(row['POS'])
+
+    ## Fixed code
+    # splai_results: dict = {float(row['DS_AG']): int(row['DP_AG']), 
+    #                        float(row['DS_AL']): int(row['DP_AL']), 
+    #                        float(row['DS_DG']): int(row['DP_DG']), 
+    #                        float(row['DS_DL']): int(row['DP_DL'])}
+    # maxsplai: float = max(splai_results.keys())
+    # maxsplai_pos: int = splai_results[maxsplai]
     
     # Generate query positions 
     if (row['SpliceType'] == 'Donor_int' 
