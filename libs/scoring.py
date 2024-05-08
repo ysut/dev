@@ -70,7 +70,7 @@ class Scoring:
                     else:
                         raw_score = pre_score + self.scores['frameshift_nmd_not_eloF']
                 else:
-                    if ((float(row['skipped_ccrs']) >= 0.95) | (float(row['deleted_ccrs']) >= 0.95)):
+                    if ((float(row['skipped_ccrs']) >= 95) | (float(row['deleted_ccrs']) >=　95)):
                         raw_score = pre_score + self.scores['canon_strong']
                     else:
                         if row['is_10%_truncation']:
@@ -79,7 +79,7 @@ class Scoring:
                             raw_score = pre_score + self.scores['canon_moderate']
             # In-frame
             else:
-                if ((float(row['skipped_ccrs']) >= 0.95) | (float(row['deleted_ccrs']) >= 0.95)):
+                if ((float(row['skipped_ccrs']) >= 95) | (float(row['deleted_ccrs']) >= 95)):
                     raw_score = pre_score + self.scores['canon_strong']
                 else:
                     if row['is_10%_truncation']:
