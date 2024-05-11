@@ -19,6 +19,7 @@ def calc_exint_info(row, db, db_intron):
     
     if strand == '+':
         region: tuple = (chrom, pos-1, pos)
+        # region: tuple = (chrom, pos, pos+1)
     elif strand == '-':
         region: tuple = (chrom, pos, pos+1)
     else:
@@ -26,6 +27,19 @@ def calc_exint_info(row, db, db_intron):
         region: tuple = (chrom, pos-1, pos)
 
     ## Fetch exon or intron information from each GENCODE DBs
+
+    # Fixed
+    # if ((row['SpliceType'] == 'Donor_ex') | (row['SpliceType'] == 'Acceptor_ex')):
+    #     fetched_data = db.children(
+    #         query_enst, limit=region, featuretype='exon')
+    #     d = next(fetched_data)
+    # else:
+    #     fetched_data = db_intron.children(
+    #         query_enst, limit=region, featuretype='intron')
+    #     d = next(fetched_data)
+
+
+    # Not Used
     try:
         fetched_data = db.children(
             query_enst, limit=region, featuretype='exon')
@@ -43,6 +57,12 @@ def calc_exint_info(row, db, db_intron):
     else:
         pass
     
+    if row['is_Canonical'] == 'True':
+        fetched_data = db_intron.children(
+            query_enst, limit=region, featuretype='intron')
+        d = next(fetched_data)
+
+
     ## Set attributes and current featuretype
     d_attr: list = d.attributes
     curtFeature = d.featuretype
