@@ -478,7 +478,7 @@ def scoaring_calibraiton(ths: dict, tp_pkl: str, tn_pkl: str):
 ################################################################################
 # Set number of bootstrap and parallel processing 
 bootstrap = 8
-num_workers = 4
+num_workers = 16
 df_tp_all, df_tn_all = load_data()
 all_solutions = find_all_solutions()
 print(f'Total solutions found: {len(all_solutions)}')
