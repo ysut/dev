@@ -67,7 +67,7 @@ def process_bootstrap(i):
 
     scoring_calibration = {}
     for index, solution in enumerate(all_solutions):
-        if index % 200 == 0:
+        if index % 10 == 0:
             print(f'set {i}: Solution {index + 1}')
         else:
             pass
@@ -477,7 +477,7 @@ def scoaring_calibraiton(ths: dict, tp_pkl: str, tn_pkl: str):
 
 ################################################################################
 # Set number of bootstrap and parallel processing 
-bootstrap = 8
+bootstrap = 100
 num_workers = 16
 df_tp_all, df_tn_all = load_data()
 all_solutions = find_all_solutions()
