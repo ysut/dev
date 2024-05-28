@@ -338,9 +338,11 @@ print(f'Total solutions found: {len(all_solutions)}')
 if __name__ == '__main__':
 
     all_results: dict = {}
+    start = int(start)
+    end = int(end)
 
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
-        future_results = list(executor.map(process_bootstrap, range(1, bootstrap + 1)))
+        future_results = list(executor.map(process_bootstrap, range(start, end + 1)))
     for result in future_results:
         all_results.update(result)
 
