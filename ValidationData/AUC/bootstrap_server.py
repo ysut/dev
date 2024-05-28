@@ -328,7 +328,7 @@ start = sys.argv[1]
 end = sys.argv[2]
 bootstrap = int(end) - int(start) + 1
 print(f"Bootstrap: {bootstrap} (start: {start}, end: {end})")
-num_workers = 16
+num_workers = os.cpu_count()-4
 df_tp_all, df_tn_all = load_data()
 all_solutions = find_all_solutions()
 print(f'Total solutions found: {len(all_solutions)}')
@@ -344,24 +344,13 @@ if __name__ == '__main__':
     for result in future_results:
         all_results.update(result)
 
-    with open(f'pkls/Completed', 'w') as f:
-        f.write("All processes are complete.")
-
-    # Save the all_results as pickle
-    with open('all_results.pkl', 'wb') as f:
-        pickle.dump(all_results, f)
-
     # Save all_results object as pickle
     import pickle
-    with open('pkls/all_results.pkl', 'wb') as f:
+    with open(f"all_results.pkl_{start}_{end}", 'wb') as f:
         pickle.dump(all_results, f)
 
-    # When completed in bootstrap section, make a flag file
-    with open('pkls/flag_bootstrap_all', 'w') as f:
-        f.write('Completed')
-
     # load all_results object from pickle
-    with open('pkls/all_results.pkl', 'rb') as f:
+    with open(f"all_results.pkl_{start}_{end}", 'rb') as f:
         all_results_restored = pickle.load(f)
 
     df = pd.DataFrame(columns=['Dataset', 'Candidate', 'Score'])
@@ -397,7 +386,7 @@ if __name__ == '__main__':
     # Extract solutions for each dataset with the best auROC value defined above
     # Store a dictionary
     set_max = []
-    for i in range(start, bootstrap + 1):
+    for i in range(start, end + 1):
         set_max.append(df.loc[(df['Dataset'] == i) & (df['auROC'] == maxdf.loc[maxdf['Dataset'] == i, 'auROC'].values[0]), :])
 
     # Save set_max as pickle
@@ -407,7 +396,7 @@ if __name__ == '__main__':
     # Extract the solution No. with most highest sample variance from each set_max[i]. 
     # The results put a dictionary with set number.
     best = {}
-    for i, set_num in enumerate(range(start, bootstrap + 1)):
+    for i, set_num in enumerate(range(start, end + 1)):
         highest_variance = set_max[i].loc[set_max[i]['SampleVariance'].idxmax(), 'SampleVariance']
         # If other candidate has the same variance, add it to the 
         best[f'set {set_num}'] = set_max[i].loc[set_max[i]['SampleVariance'] == highest_variance, 'Candidate'].values
