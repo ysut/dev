@@ -70,10 +70,6 @@ def process_bootstrap(i):
             pass
         scoring_calibration[f"Solution {index + 1}"] = scoaring_calibraiton(
             solution, f'pkls/tp_val_{i}.pkl', f'pkls/tn_val_{i}.pkl')
-
-    # When completed eacj bootstrap, create a flag file
-    with open(f'pkls/flag_bootstrap_{i}', 'w') as f:
-        f.write('Done')
     
     results[i] = scoring_calibration
     return results
@@ -332,6 +328,12 @@ num_workers = os.cpu_count()-4
 df_tp_all, df_tn_all = load_data()
 all_solutions = find_all_solutions()
 print(f'Total solutions found: {len(all_solutions)}')
+
+# Output all_solutions as tsv
+with open(f"all_solutions_{start}_{end}.tsv", 'w') as f:
+    for solution in all_solutions:
+        f.write(f"{solution}\n")
+
 # for index, solution in enumerate(all_solutions):
 #     print(f'Solution {index + 1}: {solution}')
 
@@ -348,11 +350,11 @@ if __name__ == '__main__':
 
     # Save all_results object as pickle
     import pickle
-    with open(f"all_results.pkl_{start}_{end}", 'wb') as f:
+    with open(f"all_results_{start}_{end}.pkl", 'wb') as f:
         pickle.dump(all_results, f)
 
     # load all_results object from pickle
-    with open(f"all_results.pkl_{start}_{end}", 'rb') as f:
+    with open(f"all_results_{start}_{end}.pkl", 'rb') as f:
         all_results_restored = pickle.load(f)
 
     df = pd.DataFrame(columns=['Dataset', 'Candidate', 'Score'])
@@ -404,9 +406,6 @@ if __name__ == '__main__':
         best[f'set {set_num}'] = set_max[i].loc[set_max[i]['SampleVariance'] == highest_variance, 'Candidate'].values
 
     # Save best as pickle
-    with open(f"pkls/best_{start}.pkl", 'rb') as f:
+    with open(f"pkls/best_{start}.pkl", 'wb') as f:
         pickle.dump(best, f)
 
-    # When completed, make a flag file
-    with open(f"pkls/flag_all_{start}", 'r') as f:
-        f.write('completed')
