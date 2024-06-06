@@ -1,0 +1,62 @@
+Case	Clinical diagnosis or phenotypes	Priority Score	Gene/Variant	Transcript (RefSeq)	Known disease genes	eLoF	Frameshift	overlap 95% CCRs	>10% truncation	Reported inheritance	Final interpretation
+20287	"Cerebellar vermis atrophy, Ataxia, Microcephaly, Cataract"	7	ZNF516:c.3365-2A>G:p.?	NM_014643.4	Unknown	eLoF gene	Yes	No	No	Unknown	Novel candidate gene
+12988	"Trigonocephaly, ASDa"	7	NFE2L1:c.724-2A>C p.?	NM_003204.3	Unknown	eLoF gene	Yes	No	No	Unknown	Novel candidate gene
+9869	Porencephaly	7	UBN1:c.1181+1G>A p.?	NM_001079514.3	Unknown	eLoF gene	Yes	No	No	Unknown	Novel candidate gene
+20078	Electrical status epilepticus in sleep	6	MMP16:c.404+2T>A p.?	NM_005941.5	Unknown	Non-eLoF gene	No	Yes	No	Unknown	VUS
+21789	Developmental and epileptic encephalopathy	5	MATN2:c.1696+1G>A p.?	NM_002380.5	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+21156	Epilepsy	5	SFT2D2:c.444-2A>C p.?	NM_199344.3	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+19227	"Epilepsy, ASDa"	5	OSBPL7:c.1352-2A>C p.?	NM_145798.3	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+17367	"Seizure, Cerebral atrophy"	5	JMJD7:c.625+1G>T p.?	NM_001114632.2	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+14452	Lennox-Gastaut syndrome	5	USP2:c.826-2A>G p.?	NM_004205.5	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+11444	Aicardi syndrome	5	ISY1:c.541+1G>A p.?	NM_001204890.2	Unknown	eLoF gene	No	No	No	Unknown	VUS
+10713	ASDa	5	IGFBP2:c.813+1G>A p.?	NM_001313993.2	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+9091	Schizophrenia	5	HDAC3:c.920+1G>T p.?	NM_003883.4	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+8436	Coffin Siris syndrome	5	DSCR4:c.129-2A>G p.?	NR_147130.1	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+4752	Adrenal failure	5	CCDC63:c.489+1G>A p.?	NM_152591.3	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+372	Aicardi syndrome	5	RPN2:c.303+2T>G p.?	NM_002951.5	Unknown	Non-eLoF gene	No	No	No	Unknown	VUS
+20468	Cerebellar hypoplasia	3	ARHGEF33:c.362+1G>C p.?	NM_001145451.5	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+9043	Schizophrenia	3	EXOSC10:c.2488+1G>C p.?	NM_002685.4	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+6024	ASDa	3	PRSS36:c.1357+1G>A p.?	NM_001258291.2	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+21206	"Congenital heart defects, Dysmorphism"	3	DCST1:c.392-1G>A p.?	NM_152494.4	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+19880	"Neuropathy, Ophthalmoparesis, Congenital cataracts"	3	PXK:c.1182-1G>C p.?	NM_001349532.2	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+13387	Short rib polydactyly syndrome	3	TEKT4:c.499-1G>A p.?	NM_144705.4	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+12988	"Trigonocephaly, ASDa"	3	CYB5R4:c.413-2A>C p.?	NM_016230.4	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+12291	ASDa	3	PLEKHD1:c.556-1G>T p.?	NM_001161498.2	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+11555	Kabuki syndrome	3	TRABD2B:c.989-1G>A p.?	NM_001194986.2	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+4938	Coffin Siris syndrome	3	NOTUM:c.593-1G>A p.?	NM_178493.6	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+4413	Developmental and epileptic encephalopathy	3	DCTN3:c.97-2A>G p.?	NM_007234.5	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+3986	ASDa	3	PGLYRP4:c.825-2A>G p.?	NM_020393.4	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+2325	Moyamoya disease	3	ZC3HAV1L:c.502-2A>G p.?	NM_080660.4	Unknown	Non-eLoF gene	Yes	No	No	Unknown	VUS
+20526	"Acrodysostosis, Leukoencephalopathy"	9	PKHD1:c.1836+1G>A p.?	NM_138694.4	Known	eLoF gene	Yes	No	No	AR	Phenotype mismatch
+17367	"Seizure, Cerebral atrophy"	7	HSPG2:c.4741-2A>G p.?	NM_005529.7	Known	eLoF gene	Yes	No	No	AR	Phenotype mismatch
+5100	ASDa	7	HERC1:c.1534-1G>A p.?	NM_003922.4	Known	eLoF gene	Yes	No	No	AR	Phenotype mismatch
+21599	Weaver syndrome	7	JAKMIP1:c.954+1G>C p.?	NM_001099433.2	Known	eLoF gene	Yes	No	No	AD	LP (Novel)
+11750	Kimura's disease	6	NAPB:c.666+1G>A p.?	NM_001283018.2	Known	eLoF gene	No	Yes	No	AR	Phenotype mismatch
+7528	Galloway-Mowat syndrome	5	KRT4:c.738+2T>C p.?	NM_002272.4	Known	Non-eLoF gene	No	No	No	AD	Phenotype mismatch
+2288	Moyamoya disease	5	DEF6:c.237+1G>C p.?	NM_022047.4	Known	eLoF gene	No	No	No	AR	Phenotype mismatch
+17367	"Seizure, Cerebral atrophy"	5	FDFT1:c.510+2T>A p.?	NM_004462.5	Known	Non-eLoF gene	No	No	No	AR	Inheritance mismatch
+11873	Pervasive developmental disorder not otherwise specified	5	ERI1:c.499-1G>A p.?	NM_153332.4	Known	Non-eLoF gene	No	No	No	AR	Phenotype mismatch
+6024	ASDa	4	DYNC2H1:c.1078C>T p.Arg360*	NM_001080463.2	Known	eLoF gene	No	No	No	AR	Phenotype mismatch
+21407	SEMDb	4	COL2A1:c.905C>T p.Ala302Val	NM_001844.5	Known	eLoF gene	No	No	No	AD	P (Reported)
+7605	West syndrome	4	RTN4IP1:c.646G>A p.Gly216Arg	NM_032730.5	Known	eLoF gene	Yes	No	No	AR	Phenotype mismatch
+11467	Rett syndrome	4	MECP2:c.48C>T p.Gly16Gly	NM_004992.4	Known	eLoF gene	No	No	No	XLD	P (Reported)
+17483	"ASDa, HCCc, Microcephaly, Hypotonia, Short stature"	4	PDHA1:c.738C>T p.Gly246Gly	NM_000284.4	Known	eLoF gene	No	No	No	XLD	P (Novel)
+8021	Axial spondylometaphyseal dysplasia	3	CDH23:c.2304+6T>G p.?	NM_022124.6	Known	eLoF gene	Yes	No	No	AR	Phenotype mismatch
+5037	Hypothyroidism	3	CEP55:c.184-2A>G p.?	NM_001127182.2	Known	Non-eLoF gene	Yes	No	No	AR	Phenotype mismatch
+12927	ROHHADNET syndrome	3	TTC12:c.323-1G>A p.?	NM_017868.4	Known	Non-eLoF gene	Yes	No	No	AR	Phenotype mismatch
+20526	"Acrodysostosis, Leukoencephalopathy"	3	RPGRIP1:c.2554C>T p.Arg852*	NM_020366.4	Known	eLoF gene	No	No	No	AR	Phenotype mismatch
+17367	"Seizure, Cerebral atrophy"	3	RPGRIP1:c.3236A>G p.Asn1079Ser	NM_020366.4	Known	eLoF gene	No	No	No	AR	Phenotype mismatch
+22460	Doose syndrome	3	ADAMTS17:c.1052A>G p.Lys351Arg	NM_139057.4	Known	eLoF gene	No	No	No	AR	Phenotype mismatch
+13765	Congenital diaphragmatic hernia	3	SLC7A9:c.634G>A p.Glu212Lys	NM_014270.5	Known	eLoF gene	Yes	No	No	AR	Phenotype mismatch
+52	Beals syndrome	3	NUP210:c.818-2A>G p.?	NM_024923.4	Known	Non-eLoF gene	Yes	No	No	AD	Phenotype mismatch
+5766	Hypopituitarism	3	BANK1:c.2299-1G>A p.?	NM_017935.5	Known	Non-eLoF gene	Yes	No	No	AD	Phenotype mismatch
+16260	Inherited GPI deficiency	3	DNAH5:c.12500-14A>G p.?	NM_001369.3	Known	eLoF gene	Yes	No	No	AR	Phenotype mismatch
+5766	Hypothyroidism	3	TMEM161B:c.1089+1G>A p.?	NM_153354.5	Known	Non-eLoF gene	Yes	No	No	AR	Phenotype mismatch
+3986	ASDa	3	EYS:c.6208C>T p.Leu2070Leu	NM_001142800.2	Known	eLoF gene	Yes	No	No	AR	Phenotype mismatch
+13920	"Epilepsy, Cortical atrophy"	3	KMT2E:c.2720A>T p.Asp907Val	NM_182931.3	Known	eLoF gene	No	No	No	AD	Phenotype mismatch
+22025	Epilepsy	3	SLC26A3:c.2006C>T p.Ser669Leu	NM_000111.3	Known	Non-eLoF gene	No	No	No	AR	Phenotype mismatch
+13635	Intellectual disability	3	SNX13:c.2064+2T>C p.?	NM_015132.5	Known	Non-eLoF gene	Yes	No	No	AR	Inheritance mismatch
+7723	Pial arteriovenous fistula	3	AUTS2:c.2066G>T p.Arg689Leu	NM_015570.4	Known	eLoF gene	Yes	No	No	AD	Phenotype mismatch
+19560	Inherited GPI deficiency	3	GPAA1:c.545T>G p.Phe182Cys	NM_003801.4	Known	eLoF gene	No	No	No	AR	Inheritance mismatch
+8928	"Intellectual disability, ASDa"	3	ELP1:c.740A>G p.Lys247Arg	NM_003640.5	Known	Non-eLoF gene	No	No	No	AD/AR	Phenotype mismatch
+17579	Inherited GPI deficiency	3	IRAK1:c.795-1G>T p.?	NM_001569.4	Known	Non-eLoF gene	Yes	No	No	AD	Phenotype mismatch
