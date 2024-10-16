@@ -10,26 +10,34 @@ from liftover import get_lifter
 
 ############ Functions for analysis ############
 def classifying_canonical(df: pd.DataFrame, cdot: str) -> pd.DataFrame:
-   df['is_Canonical'] = 'False'
-   df['Int_loc'] = df[cdot].str.extract('([+-]\d+)')
-   df.loc[(df['Int_loc'] == '-2') 
-          | (df['Int_loc'] == '-1') 
-          | (df['Int_loc'] == '+1') 
-          | (df['Int_loc'] == '+2'), 
-          'is_Canonical'] = 'True'
-   canonicallist = []
+    df['is_Canonical'] = 'False'
+    df['Int_loc'] = df[cdot].str.extract('([+-]\d+)')
+    df.loc[(df['Consequence'] == 'splice_acceptor_variant') 
+           | (df['Consequence'] == 'splice_donor_variant'),
+           'is_Canonical'] = 'True'
+    
+    result = df.fillna({'Int_loc': 'Exonic'})
+    return result
+
+    # df['Int_loc'] = df[cdot].str.extract('([+-]\d+)')
+    # df.loc[(df['Int_loc'] == '-2') 
+    #       | (df['Int_loc'] == '-1') 
+    #       | (df['Int_loc'] == '+1') 
+    #       | (df['Int_loc'] == '+2'), 
+    #       'is_Canonical'] = 'True'
+    # canonicallist = []
    
-   for d in ['-2', '-1', '+1', '+2']:
-      cano_count = len(df.loc[df['Int_loc'] == d])
-      print(f"{d}: {cano_count}")
-      canonicallist.append(cano_count)
+    # for d in ['-2', '-1', '+1', '+2']:
+    #     cano_count = len(df.loc[df['Int_loc'] == d])
+    #     print(f"{d}: {cano_count}")
+    #     canonicallist.append(cano_count)
 
-   print(f'Total variants      : {len(df)}')
-   print(f'Canonical variants  : {sum(canonicallist)}')
-   print(f'non-Canon variants  : {len(df) - sum(canonicallist)}\n')
-   result = df.fillna({'Int_loc': 'Exonic'})
+    # print(f'Total variants      : {len(df)}')
+    # print(f'Canonical variants  : {sum(canonicallist)}')
+    # print(f'non-Canon variants  : {len(df) - sum(canonicallist)}\n')
+    # result = df.fillna({'Int_loc': 'Exonic'})
 
-   return result
+    # return result
 
 
 ############ Functions for apply method ############
@@ -153,10 +161,18 @@ def extract_splai_result_2(row, genecol: str):
         else:
             return info
 
+def fetch_enst_full(row, db: gffutils.interface.FeatureDB):
+    query_region = (f"chr{row['CHROM']}", row['POS'] - 1, row['POS'])
+    for t in db.region(region=query_region, featuretype='transcript'):
+        if t.id.startswith(row['ENST']):
+            return t.id
+        else:
+            pass
+    return 'ENST_with_Ver_not_available'
 
-def calc_ex_int_num(row, 
-                    db: gffutils.interface.FeatureDB,
-                    db_intron: gffutils.interface.FeatureDB):
+
+def calc_ex_int_num(
+    row, db: gffutils.interface.FeatureDB, db_intron: gffutils.interface.FeatureDB):
     # print(f'{row["ENST_Full"]}-{row["gene"]}:{row["variant_id"]}:{row["Int_loc"]}')
     if (row['SpliceType'] == 'Donor_int' 
         or row['SpliceType'] == 'Acceptor_int'):
@@ -292,64 +308,3 @@ def calc_prc_exon_loc(row):
     
     else:
         return 'Intron_variant'
-
-# def anno_strand_old(row, 
-#                     db: gffutils.interface.FeatureDB,
-#                     db_intron: gffutils.interface.FeatureDB):
-#     """Calculate exon location from start of exon or end of exon.
-
-#     Args:
-#         row (_type_): _description_
-
-#     Returns:
-#         str: "Upstream distance : Downstream distance"
-#     """
-#     tbx_anno = tabixfile
-#     query_chr: str = f"chr{row['CHROM']}"
-#     query_pos: int = int(row['POS'])
-#     query_start: int = int(query_pos) - 1
-#     query_end: int = int(query_pos) + 1
-#     query_enst: str = row[queryenst]
-
-#     for r in tbx_anno.fetch(query_chr, query_start, query_end, 
-#                             parser=pysam.asGFF3()):
-#         try:
-#             enst = re.match(r'ENST\d+', r.transcript_id).group()
-#         except KeyError:
-#             pass
-#         else:
-#             if enst == query_enst:
-#                 return r.strand
-#             else:
-#                 return 'unk'
-
-
-# def anno_strand_old(row, tabixfile: pysam.pysam.libctabix.TabixFile, queryenst: str):
-#     """Calculate exon location from start of exon or end of exon.
-
-#     Args:
-#         row (_type_): _description_
-
-#     Returns:
-#         str: "Upstream distance : Downstream distance"
-#     """
-#     tbx_anno = tabixfile
-#     query_chr: str = f"chr{row['CHROM']}"
-#     query_pos: int = int(row['POS'])
-#     query_start: int = int(query_pos) - 1
-#     query_end: int = int(query_pos) + 1
-#     query_enst: str = row[queryenst]
-
-#     for r in tbx_anno.fetch(query_chr, query_start, query_end, 
-#                             parser=pysam.asGFF3()):
-#         try:
-#             enst = re.match(r'ENST\d+', r.transcript_id).group()
-#         except KeyError:
-#             pass
-#         else:
-#             if enst == query_enst:
-#                 return r.strand
-#             else:
-#                 return 'unk'
-            
-

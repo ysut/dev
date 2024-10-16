@@ -7,15 +7,16 @@ def calc_exint_info(row, db, db_intron):
     ## Set up variables
     query_enst = row['ENST_Full'] 
     chrom, pos = f'chr{row["CHROM"]}', int(row['POS'])
+    strand = row['Strand']
 
     ## Strand check
-    try:
-        strand = next(db.children(query_enst, featuretype='transcript')).strand
-    except StopIteration:
-        # print(f'Warning: No strand information -> {row["ENST_Full"]}')
-        return 'Warning'
-    else:
-        pass
+    # try:
+    #     strand = next(db.children(query_enst, featuretype='transcript')).strand
+    # except StopIteration:
+    #     # print(f'Warning: No strand information -> {row["ENST_Full"]}')
+    #     return 'Warning'
+    # else:
+    #     pass
     
     if strand == '+':
         region: tuple = (chrom, pos-1, pos)
@@ -61,7 +62,6 @@ def calc_exint_info(row, db, db_intron):
         fetched_data = db_intron.children(
             query_enst, limit=region, featuretype='intron')
         d = next(fetched_data)
-
 
     ## Set attributes and current featuretype
     d_attr: list = d.attributes
@@ -407,7 +407,6 @@ def _varidate_var_pos_50bp(**kwargs):
         return 'outside_50bp'
     else:
         return 'within_50bp'
-
 
 ##. Predictions
 def predict_gained_exon(thresholds: dict, **kwargs):
