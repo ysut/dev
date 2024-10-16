@@ -1,0 +1,6 @@
+WARNING: line 15317 skipped (2 183960048 CG183918 A <DEL> . . CLASS=DM;MUT=...): variant size (23691453) is bigger than --max_sv_size (10000000)
+WARNING: line 15336 skipped (2 189839163 CG220458 C <DEL> . . CLASS=DM;MUT=...): variant size (12736697) is bigger than --max_sv_size (10000000)
+WARNING: line 16076 skipped (2 190417039 CG183917 C <DEL> . . CLASS=DM;MUT=...): variant size (11849961) is bigger than --max_sv_size (10000000)
+WARNING: line 16208 skipped (2 191241761 CG183908 G <DEL> . . CLASS=DM;MUT=...): variant size (10738873) is bigger than --max_sv_size (10000000)
+WARNING: line 16397 skipped (2 192050770 CG183913 T <DEL> . . CLASS=DM;MUT=...): variant size (14773470) is bigger than --max_sv_size (10000000)
+WARNING: line 16470 skipped (2 198658272 CG183912 A <DEL> . . CLASS=DM;MUT=...): variant size (15108405) is bigger than --max_sv_size (10000000)

@@ -37,12 +37,6 @@ def calc_exon_loc(row,
                   tabixfile: pysam.pysam.libctabix.TabixFile, 
                   enstcolname: str):
     """Calculate exon location from start of exon or end of exon.
-
-    Args:
-        row (pd.Series)  : _description_
-        tabixfile        : 
-        enstcolname (str): The name of ENST ID col
-
     Returns:
         str: "Upstream distance : Downstream distance"
     """
@@ -75,7 +69,8 @@ def calc_exon_loc(row,
                     pass
             else:
                 pass
-
+            
+    return 'ENST_not_match:ENST_not_match'
 
 def extract_splicing_region(row):
     if row['ex_up_dist'] is None:
@@ -205,15 +200,19 @@ def calc_ex_int_num(row,
         return 'unknown'
             
 
+import sys
 def select_exon_pos(row):
-    if row['ex_up_dist']:
-        return min(int(row['ex_up_dist']), int(row['ex_down_dist']))
+    if isinstance(row['ex_up_dist'], str):
+        return row['ex_up_dist']
     else:
-        pass
+        if row['ex_up_dist']:
+            return min(int(row['ex_up_dist']), int(row['ex_down_dist']))
+        else:
+            return 'Warning: Unknown SpliceType'
 
 
 def extract_splicing_region(row):
-    if row['ex_up_dist'] is None:
+    if row['ex_up_dist'] == 'ENST_not_match':
         pass
     else: 
         if int(row['ex_down_dist']) == 0:
@@ -233,11 +232,16 @@ def select_donor_acceptor(row):
     Returns:
         str: 'Donor' or 'Acceptor' with 'ex' or 'int'
     """    
+    if row['exon_pos'] == 'ENST_not_match':
+        return 'ENST_not_match'
+    else:
+        pass
+
     if row['Int_loc'] == 'Exonic':
         try:
             int(row['ex_down_dist'])
         except TypeError:
-            return 'Warning: Unknown'
+            return 'Warning: Unkonwn transcript'
         else:               
             d = int(row['ex_down_dist'])
             u = int(row['ex_up_dist'])
@@ -252,9 +256,8 @@ def select_donor_acceptor(row):
     elif int(row['Int_loc']) > 0:
         return 'Donor_int'
     else:
-        return 'Warning: Unkown'
+        return 'Warning: Unknown'
     
-
 def calc_prc_exon_loc(row):  
     if row['Int_loc'] == 'Exonic':
         try:

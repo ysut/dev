@@ -1,0 +1,2 @@
+WARNING: line 3944 skipped (13 39921987 CG139016 A <DEL> . . CLASS=DM;MUT=...): variant size (28394428) is bigger than --max_sv_size (10000000)
+WARNING: line 4016 skipped (13 44315373 CG139013 A <DEL> . . CLASS=DM;MUT=...): variant size (11288088) is bigger than --max_sv_size (10000000)
