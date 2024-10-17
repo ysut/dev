@@ -2,6 +2,12 @@ import numpy as np
 import pandas as pd
 import gffutils
 
+def __exits_spliceai_scores(row):
+    if row['MaxSpliceAI'] == 'NA' or row['MaxSpliceAI'] == '.':
+        return False
+    else:
+        return True
+
 
 def calc_exint_info(row, db, db_intron):
     ## Set up variables
@@ -442,6 +448,11 @@ def predict_retein_intron(**kwargs):
 ################################################################################
 
 def pseudoexon_activation(row, thresholds, db_intron):
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+
     if (_varidate_var_pos_50bp(**row) == 'outside_50bp'
         and predict_gained_exon(thresholds=thresholds, **row)
         and _calc_gained_exon_size(thresholds=thresholds, **row)
@@ -454,6 +465,11 @@ def pseudoexon_activation(row, thresholds, db_intron):
     
 
 def partial_intron_retention(row, thresholds):
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     if ((_varidate_var_pos_250bp(**row) == 'within_250bp')
         and (_is_cryptic_Acp_activation(thresholds=thresholds, **row)) 
              or (_is_cryptic_Dnr_activation(thresholds=thresholds, **row))
@@ -465,6 +481,11 @@ def partial_intron_retention(row, thresholds):
 
 
 def partial_exon_deletion(row, thresholds):
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     if ((_varidate_var_pos_250bp(**row) == 'within_250bp')
         and ((_bp_5prime(thresholds, **row) > 0) 
              or (_bp_3prime(thresholds, **row) < 0))):
@@ -478,6 +499,11 @@ def exon_skipping(row, thresholds):
     When the variant is located outside >50 bp from 
     closest exon-intron boundary, exon skipping may not occur.
     """
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     lost_exon_size = predict_lost_exon(thresholds=thresholds, **row)
     if ((_varidate_var_pos_50bp(**row) == 'outside_50bp')
         or (lost_exon_size is None)):
@@ -499,6 +525,11 @@ def intron_retention(row, thresholds):
     When the variant is located outside >50 bp from 
     close exon-intron boundary, intron retention may not occur.
     """
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     if ((_varidate_var_pos_50bp(**row) == 'outside_50bp' 
         or predict_retein_intron(thresholds=thresholds, **row) is None)):
         return False
@@ -510,6 +541,11 @@ def intron_retention(row, thresholds):
 
 ## Multi-exon skipping
 def multi_exon_skipping(row, thresholds: dict):
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     if row['Exon_skipping']:
         info = row['ExInt_INFO']
         lost_exon_size = predict_lost_exon(thresholds=thresholds, **row)

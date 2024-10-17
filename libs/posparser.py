@@ -9,36 +9,116 @@ from liftover import get_lifter
 
 
 ############ Functions for analysis ############
-def classifying_canonical(df: pd.DataFrame, cdot: str) -> pd.DataFrame:
-    df['is_Canonical'] = 'False'
-    df['Int_loc'] = df[cdot].str.extract('([+-]\d+)')
+def classifying_canonical(df: pd.DataFrame) -> pd.DataFrame:
+    df['is_Canonical'] = False
+    # df['IntronDist'] = df[cdot].str.extract('([+-]\d+)')
     df.loc[(df['Consequence'] == 'splice_acceptor_variant') 
            | (df['Consequence'] == 'splice_donor_variant'),
-           'is_Canonical'] = 'True'
+           'is_Canonical'] = True
     
-    result = df.fillna({'Int_loc': 'Exonic'})
-    return result
+    return df
+    
+def _extract_affected_region(pos: int, ref: str, alt: str) -> dict:
+    """
+    Function to extract the POS of the affected region by the variant
+    """
+    ref_len = len(ref)
+    alt_len = len(alt)
+    
+    # Calculate the affected region
+    if ref_len > alt_len:
+        # Deletion
+        affected_start = pos
+        affected_end = pos + (ref_len - 1)
+    elif alt_len > ref_len:
+        # Insertion
+        affected_start = pos
+        affected_end = pos
+    else:
+        # Substitution
+        affected_start = pos
+        affected_end = pos + (ref_len - 1)
+    
+    return {'Affected_start_pos': affected_start,
+            'Affected_end_pos': affected_end}
 
-    # df['Int_loc'] = df[cdot].str.extract('([+-]\d+)')
-    # df.loc[(df['Int_loc'] == '-2') 
-    #       | (df['Int_loc'] == '-1') 
-    #       | (df['Int_loc'] == '+1') 
-    #       | (df['Int_loc'] == '+2'), 
-    #       'is_Canonical'] = 'True'
-    # canonicallist = []
-   
-    # for d in ['-2', '-1', '+1', '+2']:
-    #     cano_count = len(df.loc[df['Int_loc'] == d])
-    #     print(f"{d}: {cano_count}")
-    #     canonicallist.append(cano_count)
+def signed_distance_to_exon_boundary(
+        row, db: gffutils.FeatureDB, db_intron: gffutils.FeatureDB) -> int:
+    """
+    Calculate the signed distance from the nearest exon-intron boundary 
+    in the intron variants.
 
-    # print(f'Total variants      : {len(df)}')
-    # print(f'Canonical variants  : {sum(canonicallist)}')
-    # print(f'non-Canon variants  : {len(df) - sum(canonicallist)}\n')
-    # result = df.fillna({'Int_loc': 'Exonic'})
+    Parameters:
+    variant_position: int, 
+    db_intron: gffutils.FeatureDB
+    strand: "+" or "-"
 
-    # return result
+    Returns:
+    A signed distance from affected region to the nearest exon-intron boundary
+    """
+    # Check intron variant or not
+    for exon in db.children(id=row['ENST_Full'], featuretype='exon'):
+        if exon.start <= row['POS'] <= exon.end:
+            return np.nan # If an exonic variant, return NaN
 
+    # Extract parameters
+    query_enst = row['ENST_Full']
+    strand = row['Strand']
+    variant_position, ref, alt = row['POS'], row['REF'], row['ALT']
+
+    # Check ENST availability (wheher query_enst starts with "ENST")
+    if not query_enst.startswith('ENST'):
+        return "[Warning] Invalid ENST ID"
+        
+    introns = list(db_intron.children(id=query_enst, featuretype='intron'))
+    introns.sort(key=lambda intron: intron.start)
+
+    boundaries = []
+    for intron in introns:
+        intron_start = intron.start
+        intron_end = intron.end
+        
+        # Case of plus strand: 3' end (exon end position) → minus, 5' end (exon start position) → plus
+        if strand == '+':
+            boundaries.append((intron_start - 1, '+'))  # 5'-prime end: plus sign
+            boundaries.append((intron_end + 1, '-'))    # 3'-prime end: minus sign
+
+        # Case of minus strand: 3' end (exon start position) → minus, 5' end (exon end position) → plus
+        elif strand == '-':
+            boundaries.append((intron_start - 1, '-'))  # 3'-prime end: minus sign
+            boundaries.append((intron_end + 1, '+'))    # 5'-prime end: plus sign
+        else:
+            raise ValueError("Strand must be '+' or '-'")
+
+    # Calculate the affected region
+    affected_region: dict = _extract_affected_region(variant_position, ref, alt)
+
+    # Find the closest boundary
+    closest_distance_s, closest_distance_e = None, None
+    closest_sign_s, closest_sign_e = None, None
+
+    for boundary, sign in boundaries:
+        distance = abs(affected_region['Affected_start_pos'] - boundary)
+        if closest_distance_s is None or distance < closest_distance_s:
+            closest_distance_s = distance
+            closest_sign_s = sign
+        
+        distance = abs(affected_region['Affected_end_pos'] - boundary)
+        if closest_distance_e is None or distance < closest_distance_e:
+            closest_distance_e = distance
+            closest_sign_e = sign
+
+    # Select the closest boundary 
+    if abs(closest_distance_s) < abs(closest_distance_e):
+        closest_distance, closest_sign = closest_distance_s, closest_sign_s
+    else:
+        closest_distance, closest_sign = closest_distance_e, closest_sign_e
+
+    # Return the signed distance
+    if closest_sign == '+':
+        return int(closest_distance)
+    else:
+        return int(-closest_distance)
 
 ############ Functions for apply method ############
 def calc_exon_loc(row, 
@@ -78,49 +158,22 @@ def calc_exon_loc(row,
             else:
                 pass
             
-    return 'ENST_not_match:ENST_not_match'
+    return '[Warning] ENST_unmatch:[Warning] ENST_unmatch'
 
-def extract_splicing_region(row):
-    if row['ex_up_dist'] is None:
-        pass
+def extract_splicing_region(row) -> str:
+    if row['ENST_Full'] == '[Warning] ENST_with_Ver_not_available':
+        return '[Warning] Invalid ENST ID'
+    
+    if row['ex_up_dist'] == '[Warning] ENST_unmatch':
+        return '[Warning] ENST_unmatch'
+
     else: 
         if int(row['ex_down_dist']) == 0:
             return 'ex_acceptor_site'
         elif int(row['ex_up_dist']) <= 2:
             return 'ex_donor_site'
         else:
-            return 'non_SplExon'
-
-def select_donor_acceptor(row):
-    """Select Donor site or Acceptor site
-
-    Args:
-        row (pd.DataFrame): Required columns are 
-                            'Int_loc', 'ex_down_dist', and 'ex_up_dist'.
-    Returns:
-        str: 'Donor' or 'Acceptor' with 'ex' or 'int'
-    """    
-    if row['Int_loc'] == 'Exonic':
-        try:
-            int(row['ex_down_dist'])
-        except TypeError:
-            return 'Unknown'
-        else:               
-            d = int(row['ex_down_dist'])
-            u = int(row['ex_up_dist'])
-            if d < u:
-                return 'Acceptor_ex'
-            elif d > u:
-                return 'Donor_ex'
-            else:
-                return 'Center_of_Exon'
-    elif int(row['Int_loc']) < 0:
-        return 'Acceptor_int'
-    elif int(row['Int_loc']) > 0:
-        return 'Donor_int'
-    else:
-        return 'Unkown'
-
+            return 'non_SplicingExonPos'
 
 def extract_splai_result(row):
     for i in range(9):  
@@ -134,14 +187,13 @@ def extract_splai_result(row):
                 pass
         else:
             pass
-    return 'No SpliceAI predictions'
+    return '[Warning] No_SpliceAI_predictions'
 
 
 def extract_splai_result_2(row, genecol: str):
     if row['is_Multi']:
         for i in range(17):
             info = row[i]
-            # print(info)
             try:
                 info: str = re.sub(r'\w+\|', '', info, 1)
             except:
@@ -149,7 +201,6 @@ def extract_splai_result_2(row, genecol: str):
             else:
                 gene: str = re.match(r'[^|]+', info).group()
                 if row[genecol] == gene:
-                    # print(f'column: {i}, {gene}')
                     return info
                 else:
                     pass
@@ -157,7 +208,7 @@ def extract_splai_result_2(row, genecol: str):
         try:
             info: str = re.sub(r'\w+\|', '', row[0], 1)
         except:
-            return 'No SpliceAI predictions'
+            return '[Warning] No_SpliceAI_predictions'
         else:
             return info
 
@@ -168,12 +219,12 @@ def fetch_enst_full(row, db: gffutils.interface.FeatureDB):
             return t.id
         else:
             pass
-    return 'ENST_with_Ver_not_available'
+    return '[Warning] ENST_with_Ver_not_available'
 
 
 def calc_ex_int_num(
     row, db: gffutils.interface.FeatureDB, db_intron: gffutils.interface.FeatureDB):
-    # print(f'{row["ENST_Full"]}-{row["gene"]}:{row["variant_id"]}:{row["Int_loc"]}')
+    # print(f'{row["ENST_Full"]}-{row["gene"]}:{row["variant_id"]}:{row["IntronDist"]}')
     if (row['SpliceType'] == 'Donor_int' 
         or row['SpliceType'] == 'Acceptor_int'):
 
@@ -216,7 +267,6 @@ def calc_ex_int_num(
         return 'unknown'
             
 
-import sys
 def select_exon_pos(row):
     if isinstance(row['ex_up_dist'], str):
         return row['ex_up_dist']
@@ -224,40 +274,26 @@ def select_exon_pos(row):
         if row['ex_up_dist']:
             return min(int(row['ex_up_dist']), int(row['ex_down_dist']))
         else:
-            return 'Warning: Unknown SpliceType'
-
-
-def extract_splicing_region(row):
-    if row['ex_up_dist'] == 'ENST_not_match':
-        pass
-    else: 
-        if int(row['ex_down_dist']) == 0:
-            return 'ex_acceptor_site'
-        elif int(row['ex_up_dist']) <= 2:
-            return 'ex_donor_site'
-        else:
-            return 'non_SplExon'
-
+            return '[Warning] Unknown_SpliceType'
 
 def select_donor_acceptor(row):
     """Select Donor site or Acceptor site
-
     Args:
         row (pd.DataFrame): Required columns are 
-                            'Int_loc', 'ex_down_dist', and 'ex_up_dist'.
+                            'IntronDist', 'ex_down_dist', and 'ex_up_dist'.
     Returns:
         str: 'Donor' or 'Acceptor' with 'ex' or 'int'
     """    
-    if row['exon_pos'] == 'ENST_not_match':
-        return 'ENST_not_match'
+    if row['exon_pos'] == '[Warning] ENST_unmatch':
+        return '[Warning] ENST_unmatch'
     else:
         pass
 
-    if row['Int_loc'] == 'Exonic':
+    if isinstance(row['IntronDist'], float):  # Equal to np.nan (exonic variant)
         try:
             int(row['ex_down_dist'])
         except TypeError:
-            return 'Warning: Unkonwn transcript'
+            return '[Warning] Unkown exon location'
         else:               
             d = int(row['ex_down_dist'])
             u = int(row['ex_up_dist'])
@@ -267,44 +303,52 @@ def select_donor_acceptor(row):
                 return 'Donor_ex'
             else:
                 return 'Center_of_Exon'
-    elif int(row['Int_loc']) < 0:
+    elif int(row['IntronDist']) < 0:
         return 'Acceptor_int'
-    elif int(row['Int_loc']) > 0:
+    elif int(row['IntronDist']) > 0:
         return 'Donor_int'
     else:
-        return 'Warning: Unknown'
-    
+        return '[Warning] Uncalssified SpliceType'
+
+
 def calc_prc_exon_loc(row):  
-    if row['Int_loc'] == 'Exonic':
+    if row['ENST_Full'] == '[Warning] ENST_with_Ver_not_available':
+        return '[Warning] Invalid ENST ID'
+    if row['ex_up_dist'] == '[Warning] ENST_unmatch':
+        return '[Warning] ENST_unmatch'
+    
+    if isinstance(row['IntronDist'], float):
         try:
             curt_ex_length = int(row['ex_up_dist']) + int(row['ex_down_dist'])
-        except TypeError as e:
+        except TypeError:
             return np.nan
         
         try:
-            row['ExInt_INFO']['strand']
+            row['Strand']
         except:
             return np.nan
 
-
-        if (row['ExInt_INFO']['strand'] == '+' 
+        if (row['Strand'] == '+' 
                 and int(row['ex_up_dist']) <= int(row['ex_down_dist'])):
             return int(row['exon_pos']) / curt_ex_length * 100
         
-        elif (row['ExInt_INFO']['strand'] == '-' 
+        elif (row['Strand'] == '-' 
               and int(row['ex_up_dist']) >= int(row['ex_down_dist'])):
             return int(row['exon_pos']) / curt_ex_length * 100
         
-        elif (row['ExInt_INFO']['strand'] == '+' 
+        elif (row['Strand'] == '+' 
               and int(row['ex_up_dist']) > int(row['ex_down_dist'])):
             return (1 - (int(row['exon_pos']) / curt_ex_length)) * 100
     
-        elif (row['ExInt_INFO']['strand'] == '-' 
+        elif (row['Strand'] == '-' 
               and int(row['ex_up_dist']) < int(row['ex_down_dist'])):
             return (1 - (int(row['exon_pos']) / curt_ex_length)) * 100
     
         else:
-            return 'Waring: unexpected conditions'
+            return '[Waring] Unexpected conditions'
     
     else:
-        return 'Intron_variant'
+        return 'non_exonic_variant'
+
+
+
