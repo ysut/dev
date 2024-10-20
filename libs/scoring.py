@@ -28,39 +28,22 @@ class Scoring:
         self.scores: dict = ths
 
     def _calc_canon_prescore(self, row) -> int:
-        if row['maxsplai'] < 0.1:
+        if float(row['maxsplai']) < 0.1:
             return self.scores['canon_splai_lte_0.1']
-        elif row['maxsplai'] < 0.2:
+        elif float(row['maxsplai']) < 0.2:
             return self.scores['canon_splai_bet_0.1_0.2']
         else:
             return self.scores['canon_splai_gte_0.2']
 
     def insilico_screening(self, row) -> int:
-        #1. Non-canonical
-        if row['is_Canonical'] == 'False':
-            if row['maxsplai'] >= 0.2:
-                return self.scores['non_canon_splai_gte_0.2']
-            elif row['maxsplai'] <= 0.1:
-                if ((row['SpliceType'] == 'Acceptor_int') | (row['SpliceType'] == 'Donor_int')):
-                    if ((int(row['Int_loc']) <= -21) | (int(row['Int_loc']) >= 7)):
-                        raw_score = self.scores['non_canon_splai_lte_0.1_outside']
-                    else:
-                        raw_score = self.scores['non_canon_splai_lte_0.1_other']
-                elif ((row['SpliceType'] == 'Acceptor_ex') | (row['SpliceType'] == 'Donor_ex')):
-                    if row['csq'] in bp7_csq:
-                        if ((int(row['ex_up_dist']) >= 1) & (int(row['ex_down_dist']) >= 3)):
-                            raw_score = self.scores['non_canon_splai_lte_0.1_outside']
-                        else:
-                            raw_score = self.scores['non_canon_splai_lte_0.1_other']
-                    else:
-                        raw_score = self.scores['non_canon_splai_lte_0.1_other']
-                else:
-                    raw_score = self.scores['non_canon_splai_lte_0.1_other']
-            else:
-                raw_score = self.scores['non_canon_splai_bet_0.1_0.2']
-    
-        #2. Canonical
-        else:
+        #0. No score
+        try:
+            maxsplai = float(row['maxsplai'])
+        except ValueError:
+            return "Not available"
+
+        #1. Canonical
+        if row['is_Canonical']:
             pre_score = self._calc_canon_prescore(row)
             # Frameshift variants
             if row['is_Frameshift']:
@@ -88,8 +71,31 @@ class Scoring:
                     else:
                         # print(f"≤10% Truncation {self.scores['canon_moderate']}")
                         raw_score = pre_score + self.scores['canon_moderate']
-
-            # Calibrate minus scores to 0
+        
+        #2. Non-canonical
+        else:
+            if maxsplai >= 0.2:
+                return self.scores['non_canon_splai_gte_0.2']
+            elif maxsplai <= 0.1:
+                if ((row['SpliceType'] == 'Acceptor_int') | (row['SpliceType'] == 'Donor_int')):
+                    if ((int(row['Int_loc']) <= -21) | (int(row['Int_loc']) >= 7)):
+                        raw_score = self.scores['non_canon_splai_lte_0.1_outside']
+                    else:
+                        raw_score = self.scores['non_canon_splai_lte_0.1_other']
+                elif ((row['SpliceType'] == 'Acceptor_ex') | (row['SpliceType'] == 'Donor_ex')):
+                    if row['Consequence'] in bp7_csq:
+                        if ((int(row['ex_up_dist']) >= 1) & (int(row['ex_down_dist']) >= 3)):
+                            raw_score = self.scores['non_canon_splai_lte_0.1_outside']
+                        else:
+                            raw_score = self.scores['non_canon_splai_lte_0.1_other']
+                    else:
+                        raw_score = self.scores['non_canon_splai_lte_0.1_other']
+                else:
+                    raw_score = self.scores['non_canon_splai_lte_0.1_other']
+            else:
+                raw_score = self.scores['non_canon_splai_bet_0.1_0.2']
+    
+        # Calibrate minus scores to 0
         if raw_score < 0:
             raw_score = 0
 
@@ -97,18 +103,23 @@ class Scoring:
 
 
     def clinvar_screening(self, row) -> int:
-        if row['insilico_screening'] >= 0:
-            if row['clinvar_same_pos']:
-                return self.scores['clinvar_same_pos']
-            else:
-                if row['clinvar_same_motif']:
-                    return self.scores['clinvar_same_motif']
-                else:
-                    return self.scores['clinvar_else']
+        if row['insilico_screening'] == "Not available":
+            return "Not available"
         else:
-            return self.scores['clinvar_else']
+            if row['insilico_screening'] >= 0:
+                if row['clinvar_same_pos']:
+                    return self.scores['clinvar_same_pos']
+                else:
+                    if row['clinvar_same_motif']:
+                        return self.scores['clinvar_same_motif']
+                    else:
+                        return self.scores['clinvar_else']
+            else:
+                return self.scores['clinvar_else']
 
 
-    def calc_priority_score(self, df: pd.DataFrame) -> pd.DataFrame:
-        df['PriorityScore'] = df['insilico_screening'] + df['clinvar_screening']
-        return df
+    def calc_priority_score(self, row):
+        if row['insilico_screening'] == "Not available":
+            return "Not available"
+        else:
+            return row['insilico_screening'] + row['clinvar_screening']

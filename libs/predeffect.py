@@ -10,13 +10,22 @@ pandarallel.initialize(nb_workers=os.cpu_count()-1, progress_bar=False,
                        verbose=0, use_memory_fs=False) 
 os.environ['JOBLIB_TEMP_FOLDER'] = '/tmp' 
 
+### Logging setup
+from logging import getLogger, config
+import yaml
+parent_directory = os.path.dirname(os.path.dirname('__file__'))
+config_path: str = os.path.join(parent_directory, '../../../config/logging.yaml')
+with open(config_path, 'r') as f:
+    config.dictConfig(yaml.safe_load(f))
+logger = getLogger(__name__)
+
 
 # Set the path of CCRs
-autoccr = '../../Resources/04_CCRs/ccrs.autosomes.v2.20180420.bed.gz'
-xccr = '../../Resources/04_CCRs/ccrs.xchrom.v2.20180420.bed.gz'
+autoccr = '../../../Resources/04_CCRs/ccrs.autosomes.v2.20180420.bed.gz'
+xccr = '../../../Resources/04_CCRs/ccrs.xchrom.v2.20180420.bed.gz'
 
-canonlist = '../../Resources/01_CanonicalTranscripts/CanonicalTranscripts.exoncount.tsv'
-canon = pd.read_table(canonlist, sep='\t', header=0)
+# canonlist = '../../Resources/01_CanonicalTranscripts/CanonicalTranscripts.exoncount.tsv'
+# canon = pd.read_table(canonlist, sep='\t', header=0)
 
 
 # Calculate the length of CDS
@@ -52,7 +61,7 @@ def calc_cds_len_shorten(row):
         pass
     
     if row['CDS_Length'] == 0:
-        print(f"Warning: CDS_Length == 0 in {row['variant_id']}")
+        logger.debug(f"Warning: CDS_Length == 0 in {row['variant_id']}")
         return False
     
     shorten_len = skipped + deleted
@@ -64,12 +73,17 @@ def calc_cds_len_shorten(row):
 
 
 # Determine if the gene is included in eLoFs genes
-elofs = pd.read_table('../../Resources/02_EstimatedLoFGenes/lof_genes.txt', 
-                      header=None, names=['gene'], sep='\t')
-elofs_genes = elofs['gene'].unique().tolist()
+
+import re
+elofs = pd.read_table(
+	'../../../Resources/02_EstimatedLoFGenes/Final_eLoF_genes_list/Supplementary_Data_Estimated_LoF_genes.tsv', 
+	usecols=['HGNC_ID'], sep='\t')
+
+elofs_hgnc_ids_with_prefix = elofs['HGNC_ID'].unique().tolist()
+elofs_hgnc_ids = [re.sub('HGNC:', '', hgnc) for hgnc in elofs_hgnc_ids_with_prefix]
 
 def elofs_judge(row):
-    if row['gene'] in elofs_genes:
+    if row['HGNC_ID'] in elofs_hgnc_ids:
         return True
     else:
         return False
@@ -78,23 +92,31 @@ def elofs_judge(row):
 # Determine causing NMD or escape NMD
 
 def nmd_judge(row):
+    if row['EXON']:
+        max_exon: int = int(row['EXON'].split('/')[1])
+        max_intron: int = max_exon - 1
+    elif row['INTRON']:
+        max_intron: int = int(row['INTRON'].split('/')[1])
+    else:
+        max_intron: int = -1
+	
     try:
         curt_int = row['ExInt_INFO']['curt_Int']
-    # except KeyError:
     except:
-        return 'Exonic(Non-Canonical)'
+        return 'Exonic (Non-Canonical)'
     else:
-        query_enst = row['ENST_Full']
-        try:
-            max_exon = canon.loc[canon['ENST_Full'] == query_enst, 'MaxExon'].values[0]
-        except:
-            return 'No_intron_info'
+        # query_enst = row['ENST_Full']
+
+        if max_intron == -1:
+            return '[Warning] No intron info'
+        # try:
+        #     max_exon = canon.loc[canon['ENST_Full'] == query_enst, 'MaxExon'].values[0]
+        # except:
         else:
-            max_intron = max_exon - 1
             if curt_int == max_intron:
                 return 'Escape_NMD'
             elif curt_int > max_intron:
-                return 'Warning: current_int > max_intron'
+                return '[Warning] current_int > max_intron'
             else:
                 return 'Possibly_NMD'
 
@@ -125,13 +147,21 @@ def anno_ccr_score(df: pd.DataFrame) -> pd.DataFrame:
         
         return results_dict.get(region_tuple, None)
     
-    df_skip = df[df['skipped_region'].notnull()] 
-    df_del = df[df['deleted_region'].notnull()]
+    # Create skipped or deleted region bed file
+    df_skip = df[df['skipped_region'].notnull()].copy()
+    df_del = df[df['deleted_region'].notnull()].copy()
+    
+    df_skip['skipped_region'] = df['skipped_region'].replace(
+        'Cannot predict splicing event', np.nan).copy()
+    df_del['deleted_region'] = df['deleted_region'].replace(
+        'Cannot predict splicing event', np.nan).copy()
     sr_skip = df_skip['skipped_region']
     sr_del = df_del['deleted_region']
-
+    
     sr = pd.concat([sr_skip, sr_del], axis=0)
+    sr.dropna(inplace=True)
     bedstr = '\n'.join(sr)
+
     all_regions = BedTool(bedstr, from_string=True)
     try:
         ccr_auto = BedTool(autoccr)

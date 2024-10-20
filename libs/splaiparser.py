@@ -588,12 +588,22 @@ def multi_exon_skipping(row, thresholds: dict):
 ################################################################################
 
 def anno_intron_retention_size(row, thresholds):
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     if row['Int_Retention']:
         return predict_retein_intron(thresholds=thresholds, **row)
     else:
         return np.nan
 
 def anno_partial_intron_retention_size(row, thresholds):
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     if row['Part_IntRet']:
         if -251 < _bp_5prime(thresholds, **row) < 0:
              return np.abs(_bp_5prime(thresholds, **row))
@@ -603,12 +613,22 @@ def anno_partial_intron_retention_size(row, thresholds):
         return np.nan
 
 def anno_gained_exon_size(row, thresholds):
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     if row['Pseudoexon']:
         return _calc_gained_exon_size(thresholds=thresholds, **row)
     else:
         return np.nan
 
 def anno_partial_exon_del_size(row, thresholds):
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     if row['Part_ExDel']:
         if _bp_5prime(thresholds, **row) > 0:
             return _bp_5prime(thresholds, **row)
@@ -664,9 +684,14 @@ def anno_skipped_exon_size(row, thresholds: dict):
 
 # Truncated regions
 def anno_skipped_regions(row):
-    info: dict = row['ExInt_INFO']
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
+    # info: dict = row['ExInt_INFO']
     try:
-        strand: str = info['strand']
+        strand: str = row['Strand']
     except:
         return np.nan
     posVar: int = int(row['POS'])
@@ -687,9 +712,14 @@ def anno_skipped_regions(row):
     return f"{row['CHROM']} {str(start)} {str(end)}"
 
 def anno_deleted_regions(row, thresholds: dict):
+    if __exits_spliceai_scores(row):
+        pass
+    else:
+        return "Cannot predict splicing event"
+    
     info: dict = row['ExInt_INFO']
     try:
-        strand: str = info['strand']
+        strand: str = row['Strand']
         eStart: int = int(info['eStart'])
         eEnd: int = int(info['eEnd'])
     except:
@@ -728,19 +758,3 @@ def anno_deleted_regions(row, thresholds: dict):
     # print(f"{row['CHROM']} {str(start)} {str(end)}")
     return f"{row['CHROM']} {str(start)} {str(end)}"
     
-
-
-# def anno_skipped_exon_size(row, thresholds):
-#     if row['Exon_skipping']:
-#         info = row['ExInt_INFO']
-#         lost_exon_size = predict_lost_exon(thresholds=thresholds, **row)
-#         nativeExonLength = int(info['eEnd']) - int(info['eStart']) + 1
-
-#         if lost_exon_size == nativeExonLength:
-#             return nativeExonLength
-#         else:
-#             return np.nan
-#     else:
-#         return np.nan
-        
-
